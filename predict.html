@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prédiction Exoplanètes</title>
+    <link rel="stylesheet" href="styles2.css">
+</head>
+<body>
+    <div class="predict-container">
+        <div class="predict-header">
+            <h1>Prédiction</h1>
+            <p style="color: #b0b0b0; font-size: 1.1em;">Modèle au F1 score de 92.6</p>
+            <div id="apiStatus" class="api-status offline">Vérification de l'API...</div>
+            <a href="index.html" class="back-btn">
+    <span class="back-arrow">←</span>
+    <span class="back-text">BACK</span>
+</a>
+        </div>
+
+        <div class="example-buttons">
+            <button class="example-btn" onclick="loadExample('jupiter')">Exemple Jupiter</button>
+            <button class="example-btn" onclick="loadExample('small')">Exemple Petite planète</button>
+            <button class="example-btn" onclick="loadExample('false')">Exemple Faux positif</button>
+            <button class="example-btn" onclick="generateRandomData()">Données aléatoires</button>
+            <button class="example-btn" onclick="clearForm()">Réinitialiser</button>
+        </div>
+
+        <div class="predict-grid">
+            <div class="predict-card">
+                <h2>Paramètres d'observation</h2>
+                <form id="predictionForm">
+                    <div class="form-group">
+                        <label>Mission <span class="required">*</span></label>
+                        <select name="mission" required>
+                            <option value="">Sélectionner...</option>
+                            <option value="kepler">Kepler</option>
+                            <option value="k2">K2</option>
+                            <option value="tess">TESS</option>
+                        </select>
+                        <div class="field-description">Mission spatiale de détection</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Période orbitale (jours) <span class="required">*</span></label>
+                        <input type="number" name="period_days" step="0.01" min="0" placeholder="Ex: 3.52" required>
+                        <div class="field-description">Durée d'une orbite complète</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Profondeur du transit (ppm) <span class="required">*</span></label>
+                        <input type="number" name="depth_ppm" step="1" min="0" placeholder="Ex: 15000" required>
+                        <div class="field-description">Diminution de luminosité (parties par million)</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Magnitude TESS</label>
+                        <input type="number" name="t_mag" step="0.1" min="0" max="20" placeholder="Ex: 12.1">
+                        <div class="field-description">Luminosité apparente de l'étoile</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Durée du transit (heures)</label>
+                        <input type="number" name="dur_hr" step="0.1" min="0" placeholder="Ex: 3.0">
+                        <div class="field-description">Temps de passage devant l'étoile</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ratio planète/étoile (Rp/R*)</label>
+                        <input type="number" name="rprstar" step="0.001" min="0" max="1" placeholder="Ex: 0.105">
+                        <div class="field-description">Rapport des rayons</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>a/R* (Demi-grand axe / Rayon étoile)</label>
+                        <input type="number" name="a_over_rstar" step="0.1" min="0" placeholder="Ex: 7.5">
+                        <div class="field-description">Distance orbitale normalisée</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Rayon planétaire (R⊕)</label>
+                        <input type="number" name="radius_rearth" step="0.1" min="0" placeholder="Ex: 13.0">
+                        <div class="field-description">En rayons terrestres</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Insolation (flux terrestre)</label>
+                        <input type="number" name="insol_earth" step="1" min="0" placeholder="Ex: 1200.0">
+                        <div class="field-description">Énergie reçue vs Terre</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Température d'équilibre (K)</label>
+                        <input type="number" name="eq_temp_k" step="1" min="0" placeholder="Ex: 1500.0">
+                        <div class="field-description">Température planétaire estimée</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Température effective étoile (K)</label>
+                        <input type="number" name="teff_k" step="1" min="0" placeholder="Ex: 6100.0">
+                        <div class="field-description">Température de surface stellaire</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>log g (cgs)</label>
+                        <input type="number" name="logg_cgs" step="0.01" placeholder="Ex: 4.30">
+                        <div class="field-description">Gravité de surface stellaire</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Rayon stellaire (R☉)</label>
+                        <input type="number" name="star_rad_rsun" step="0.01" min="0" placeholder="Ex: 1.15">
+                        <div class="field-description">En rayons solaires</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ascension droite (degrés)</label>
+                        <input type="number" name="ra_deg" step="0.1" min="0" max="360" placeholder="Ex: 292.1">
+                        <div class="field-description">Coordonnée céleste RA</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Déclinaison (degrés)</label>
+                        <input type="number" name="dec_deg" step="0.1" min="-90" max="90" placeholder="Ex: 48.2">
+                        <div class="field-description">Coordonnée céleste DEC</div>
+                    </div>
+
+                    <div class="threshold-control">
+                        <label>Seuil de décision: <span class="threshold-value" id="thresholdValue">0.436</span></label>
+                        <input type="range" name="threshold" min="0" max="1" step="0.001" value="0.436" oninput="updateThreshold(this.value)">
+                        <div class="field-description">Probabilité minimale pour classification positive (0.436 recommandé) </div>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submitBtn">Prédire</button>
+                </form>
+            </div>
+
+            <div class="predict-card">
+                <h2>Résultats</h2>
+                <div id="resultContainer" class="result-container">
+                    <div class="result-title" id="resultTitle"></div>
+                    <div class="result-decision" id="resultDecision"></div>
+                    <div id="resultDetails"></div>
+                </div>
+                <div class="predict-card">
+                    <h2>Simulation du système</h2>
+                    
+                    <!-- Canvas 3D (caché par défaut) -->
+                    <div id="canvas3DContainer" style="display: none; margin-bottom: 20px;">
+                        <div class="canvas-container">
+                            <canvas id="planetCanvas" width="600" height="400"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div id="resultContainer" class="result-container">
+                        <div class="result-title" id="resultTitle"></div>
+                        <div class="result-decision" id="resultDecision"></div>
+                        <div id="resultDetails"></div>
+                    </div>
+                    <div id="helpText" class="help-text">
+                        <p>Remplissez le formulaire et cliquez sur "Prédire"</p>
+                        <p style="margin-top: 10px;">Ou essayez un exemple prédéfini</p>
+                    </div>
+                </div>
+
+                <div id="helpText" class="help-text">
+                    <p>Remplissez le formulaire et cliquez sur "Prédire"</p>
+                    <p style="margin-top: 10px;">Ou essayez un exemple prédéfini</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = 'http://localhost:5000';
+
+        // Exemples de données
+        const examples = {
+            jupiter: {
+                mission: "kepler",
+                t_mag: 12.1,
+                period_days: 3.52,
+                dur_hr: 3.0,
+                depth_ppm: 15000,
+                rprstar: 0.105,
+                a_over_rstar: 7.5,
+                radius_rearth: 13.0,
+                insol_earth: 1200.0,
+                eq_temp_k: 1500.0,
+                teff_k: 6100.0,
+                logg_cgs: 4.30,
+                star_rad_rsun: 1.15,
+                ra_deg: 292.1,
+                dec_deg: 48.2
+            },
+            small: {
+                mission: "tess",
+                t_mag: 10.5,
+                period_days: 5.2,
+                dur_hr: 2.5,
+                depth_ppm: 800,
+                rprstar: 0.028,
+                a_over_rstar: 12.0,
+                radius_rearth: 1.8,
+                insol_earth: 150.0,
+                eq_temp_k: 350.0,
+                teff_k: 5800.0,
+                logg_cgs: 4.45,
+                star_rad_rsun: 0.95,
+                ra_deg: 180.5,
+                dec_deg: -25.3
+            },
+            false: {
+                mission: "kepler",
+                t_mag: 14.2,
+                period_days: 0.5,
+                dur_hr: 0.8,
+                depth_ppm: 500,
+                rprstar: 0.022,
+                a_over_rstar: 3.2,
+                radius_rearth: 0.9,
+                insol_earth: 5000.0,
+                eq_temp_k: 2200.0,
+                teff_k: 6500.0,
+                logg_cgs: 4.50,
+                star_rad_rsun: 1.05,
+                ra_deg: 45.7,
+                dec_deg: 12.8
+            }
+        };
+
+        // Vérifier l'état de l'API au chargement
+        async function checkAPIStatus() {
+            const statusDiv = document.getElementById('apiStatus');
+            try {
+                const response = await fetch(`${API_URL}/api/health`);
+                if (response.ok) {
+                    statusDiv.className = 'api-status online';
+                    statusDiv.textContent = 'Modèle actif';
+                } else {
+                    throw new Error('API non disponible');
+                }
+            } catch (error) {
+                statusDiv.className = 'api-status offline';
+                statusDiv.textContent = 'Modèle inactif';
+            }
+        }
+
+        function updateThreshold(value) {
+            document.getElementById('thresholdValue').textContent = parseFloat(value).toFixed(3);
+        }
+
+        function loadExample(type) {
+            const form = document.getElementById('predictionForm');
+            const data = examples[type];
+            
+            for (let key in data) {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) {
+                    input.value = data[key];
+                }
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('predictionForm').reset();
+            document.getElementById('thresholdValue').textContent = '0.436';
+            hideResult();
+        }
+        function loadExample(type) {
+    const form = document.getElementById('predictionForm');
+    const data = examples[type];
+    
+    for (let key in data) {
+        const input = form.querySelector(`[name="${key}"]`);
+        if (input) {
+            input.value = data[key];
+        }
+    }
+}
+
+function generateRandomData() {
+    const form = document.getElementById('predictionForm');
+    
+    const randomData = {
+        mission: ["kepler", "k2", "tess"][Math.floor(Math.random() * 3)],
+        t_mag: (Math.random() * 15 + 5).toFixed(1),
+        period_days: (Math.random() * 100 + 0.5).toFixed(2),
+        dur_hr: (Math.random() * 10 + 0.5).toFixed(1),
+        depth_ppm: Math.floor(Math.random() * 50000 + 100),
+        rprstar: (Math.random() * 0.3 + 0.01).toFixed(3),
+        a_over_rstar: (Math.random() * 50 + 2).toFixed(1),
+        radius_rearth: (Math.random() * 20 + 0.5).toFixed(1),
+        insol_earth: (Math.random() * 10000 + 10).toFixed(0),
+        eq_temp_k: Math.floor(Math.random() * 2500 + 200),
+        teff_k: Math.floor(Math.random() * 5000 + 3000),
+        logg_cgs: (Math.random() * 2 + 3.5).toFixed(2),
+        star_rad_rsun: (Math.random() * 3 + 0.5).toFixed(2),
+        ra_deg: (Math.random() * 360).toFixed(1),
+        dec_deg: (Math.random() * 180 - 90).toFixed(1)
+    };
+    
+    for (let key in randomData) {
+        const input = form.querySelector(`[name="${key}"]`);
+        if (input) {
+            input.value = randomData[key];
+        }
+    }
+}
+
+function showResult(data, isError = false) {
+    const container = document.getElementById('resultContainer');
+    const helpText = document.getElementById('helpText');
+    const title = document.getElementById('resultTitle');
+    const decision = document.getElementById('resultDecision');
+    const details = document.getElementById('resultDetails');
+    const canvas3D = document.getElementById('canvas3DContainer');
+
+    helpText.style.display = 'none';
+    container.style.display = 'block';
+    container.className = 'result-container ' + (isError ? 'error' : 'success');
+
+    if (isError) {
+        title.textContent = '❌ Erreur';
+        decision.textContent = '';
+        decision.className = 'result-decision';
+        canvas3D.style.display = 'none';
+        
+        if (data.details && Array.isArray(data.details)) {
+            details.innerHTML = '<ul class="error-list">' + 
+                data.details.map(err => `<li>${err}</li>`).join('') + 
+                '</ul>';
+        } else {
+            details.textContent = data.error || 'Une erreur est survenue';
+        }
+    } else {
+        title.textContent = 'Exoplanète détectée !';
+        decision.textContent = data.prediction.decision;
+        decision.className = 'result-decision ' + 
+            (data.prediction.decision.includes('Planète') ? 'planet' : 'not-planet');
+        
+        // Afficher l'animation 3D si c'est une planète
+        if (data.prediction.decision.includes('Planète')) {
+            canvas3D.style.display = 'block';
+            
+            // Initialiser le système 3D si pas encore fait
+            if (!planetSystem3D) {
+                init3DVisualization();
+            }
+            
+            // Créer l'objet planète avec les données de l'utilisateur
+            if (planetSystem3D && data.input_data) {
+                const planetData = {
+                    object_id: "Votre exoplanète",
+                    mission: data.input_data.mission || "Custom",
+                    period_days: parseFloat(data.input_data.period_days) || 10,
+                    dur_hr: parseFloat(data.input_data.dur_hr) || 3,
+                    depth_ppm: parseFloat(data.input_data.depth_ppm) || 1000,
+                    rprstar: parseFloat(data.input_data.rprstar) || 0.1,
+                    a_over_rstar: parseFloat(data.input_data.a_over_rstar) || 10,
+                    radius_rearth: parseFloat(data.input_data.radius_rearth) || 1,
+                    insol_earth: parseFloat(data.input_data.insol_earth) || 1,
+                    eq_temp_k: parseFloat(data.input_data.eq_temp_k) || 300,
+                    teff_k: parseFloat(data.input_data.teff_k) || 5800,
+                    logg_cgs: parseFloat(data.input_data.logg_cgs) || 4.4,
+                    star_rad_rsun: parseFloat(data.input_data.star_rad_rsun) || 1,
+                    ra_deg: parseFloat(data.input_data.ra_deg) || 0,
+                    dec_deg: parseFloat(data.input_data.dec_deg) || 0,
+                    t_mag: parseFloat(data.input_data.t_mag) || 10
+                };
+                
+                planetSystem3D.setPlanet(planetData);
+            }
+        } else {
+            canvas3D.style.display = 'none';
+        }
+        
+        details.innerHTML = `
+            <p style="margin-top: 15px; color: #b0b0b0;">
+                <strong>Données validées:</strong> ${Object.keys(data.input_data).length} champs
+            </p>
+        `;
+    }
+}
+
+        function hideResult() {
+            document.getElementById('resultContainer').style.display = 'none';
+            document.getElementById('helpText').style.display = 'block';
+        }
+
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Prédiction en cours<span class="loading-spinner"></span>';
+
+            const formData = new FormData(e.target);
+            const data = {};
+            
+            formData.forEach((value, key) => {
+                if (value !== '') {
+                    data[key] = value;
+                }
+            });
+
+            try {
+                const response = await fetch(`${API_URL}/api/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showResult(result, false);
+                } else {
+                    showResult(result, true);
+                }
+            } catch (error) {
+                showResult({
+                    error: 'Erreur de connexion au serveur',
+                    details: ['Vérifiez que l\'API est lancée: python folder/api.py']
+                }, true);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Prédire';
+            }
+        });
+
+        // Vérifier l'API au chargement
+        checkAPIStatus();
+    </script>
+     </script>
+     <script src="webgl3d.js"></script>
+     <script>
+         let planetSystem3D = null;
+         
+         function init3DVisualization() {
+             const canvas = document.getElementById('planetCanvas');
+             if (canvas && !planetSystem3D) {
+                 try {
+                     planetSystem3D = new PlanetSystem3D(canvas);
+                 } catch (error) {
+                     console.warn('WebGL non disponible:', error);
+                 }
+             }
+         }
+     </script>
+     <div class="background-stars"></div>
+     <div class="background-particles"></div>
+</body>
+</html>

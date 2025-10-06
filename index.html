@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.67">
+    <title>Exoplanet Explorer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="title">
+                <span class="title-main">NExUS</span>
+                <span class="title-sub">Neural EXoplanet Understanding System</span>
+            </h1>
+            <div class="subtitle">Powered by powerful Machine Learning models</div>
+            <div class="subtitle"> </div>
+            <a href="predict.html" class="explore-btn" style="display: inline-block; text-decoration: none; text-align: center;">Predict</a>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Animation Canvas -->
+            <section class="animation-section">
+                <div class="canvas-container">
+                    <canvas id="planetCanvas" width="600" height="600"></canvas>
+                    <div class="temp-gradient star-temp-gradient">Star T° (3000-6000 K)</div>
+                            <div class="temp-gradient planet-temp-gradient">Planet T° (200-1000 K)</div>
+                    <div class="canvas-overlay">
+                        
+                        <div class="star-info">
+                            <div class="star-name" id="starName">Host star</div>
+                            
+                            <div class="star-temp" id="starTemp">0 K</div>
+                        </div>
+                        <div class="controls-3d">
+                            <div class="camera-info">
+                                <span></span>
+                                <span id="cameraMode">Orbital</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SIMPLE GRADIENT -->
+                
+            </section>
+
+            
+
+            <!-- Planet Information Card -->
+            <section class="info-section">
+                <div class="info-card">
+                    <div class="card-header">
+                        <h2 class="planet-name" id="planetName">Confirmed Exoplanets</h2>
+                        <div class="badges">
+                            <div class="mission-badge" id="missionBadge">MISSION</div>
+                            <div class="confirmed-badge">✓ CONFIRMED</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-content">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Orbital period</div>
+                                <div class="info-value" id="periodValue">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Radius (Earth)</div>
+                                <div class="info-value" id="radiusValue">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Temperature</div>
+                                <div class="info-value" id="tempValue">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Orbital distance</div>
+                                <div class="info-value" id="distanceValue">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Transit duration</div>
+                                <div class="info-value" id="transitValue">-</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Transit depth</div>
+                                <div class="info-value" id="depthValue">-</div>
+                            </div>
+                        </div>
+
+                        <div class="star-characteristics">
+                            <h3>Host star characteristics</h3>
+                            <div class="star-grid">
+                                <div class="star-item">
+                                    <span class="star-label">Effective temperature:</span>
+                                    <span class="star-value" id="starTeff">-</span>
+                                </div>
+                                <div class="star-item">
+                                    <span class="star-label">Stellar radius:</span>
+                                    <span class="star-value" id="starRadius">-</span>
+                                </div>
+                                <div class="star-item">
+                                    <span class="star-label">Surface gravity:</span>
+                                    <span class="star-value" id="starLogg">-</span>
+                                </div>
+                                <div class="star-item">
+                                    <span class="star-label">TESS magnitude:</span>
+                                    <span class="star-value" id="starMag">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Controls -->
+            <section class="controls-section">
+                <div class="controls-info">
+                    <div class="auto-change-indicator">
+                        <span class="indicator-text">Next exoplanet in:</span>
+                        <span class="countdown" id="countdown">30s</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Background Elements -->
+        <div class="background-stars"></div>
+        <div class="background-particles"></div>
+    </div>
+
+    <script src="webgl3d.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
